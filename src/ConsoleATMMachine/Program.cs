@@ -10,7 +10,7 @@ Console.WriteLine($"Your balance: ${info.Balance}");
 Console.Write("Please enter the withdrawal amount: ");
 withdrawalAmount = Convert.ToInt32(Console.ReadLine());
 
-if (withdrawalAmount > 0)
+if (withdrawalAmount > 0 && info.Balance >= withdrawalAmount)
 {
     info.Balance -= withdrawalAmount;
     var amounts = ATMCalculator.Calculate(withdrawalAmount);
