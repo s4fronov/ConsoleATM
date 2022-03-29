@@ -30,7 +30,7 @@ if (withdrawalAmount > 0 && info.Balance >= withdrawalAmount)
     }
     finally
     {
-        ATMDenominalsChecker.CheckNominals(info, denominals);
+        ATMDenominalsChecker.CheckDenominals(info, denominals);
 
         info.Balance -= withdrawalAmount;
 
