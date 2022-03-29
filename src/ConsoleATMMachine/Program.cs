@@ -3,50 +3,55 @@ using ConsoleATMMachine;
 using ConsoleATMMachine.Models;
 
 int withdrawalAmount;
+bool isError = false;
 var json = File.ReadAllText(@"..\..\..\Info.json");
 var info = JsonConvert.DeserializeObject<ATMInformation>(json);
 
 Console.WriteLine($"Your balance: ${info.Balance}");
+
+Console.WriteLine();
 Console.Write("Please enter the withdrawal amount: ");
 withdrawalAmount = Convert.ToInt32(Console.ReadLine());
 
 if (withdrawalAmount > 0 && info.Balance >= withdrawalAmount)
 {
-    info.Balance -= withdrawalAmount;
-    var amounts = ATMCalculator.Calculate(withdrawalAmount);
+    var denominals = new int[7];
 
-    Console.WriteLine($"Your balance: ${info.Balance}");
-    Console.WriteLine($"You got: ${withdrawalAmount}");
-    Console.WriteLine($"Nominals:");
+    try
+    {
+        denominals = ATMCalculator.Calculate(info, withdrawalAmount);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine();
+        Console.WriteLine(ex.Message);
+        withdrawalAmount = 0;
+        isError = true;
+    }
+    finally
+    {
+        ATMDenominalsChecker.CheckNominals(info, denominals);
 
-    Console.WriteLine($"$100: {amounts[0]}");
-    info.CountOfNom100 -= amounts[0];
+        info.Balance -= withdrawalAmount;
 
-    Console.WriteLine($"$50:  {amounts[1]}");
-    info.CountOfNom50 -= amounts[1];
+        Console.WriteLine($"You got: ${withdrawalAmount}");
 
-    Console.WriteLine($"$20:  {amounts[2]}");
-    info.CountOfNom20 -= amounts[2];
-
-    Console.WriteLine($"$10:  {amounts[3]}");
-    info.CountOfNom10 -= amounts[3];
-
-    Console.WriteLine($"$5:   {amounts[4]}");
-    info.CountOfNom5 -= amounts[4];
-
-    Console.WriteLine($"$2:   {amounts[5]}");
-    info.CountOfNom2 -= amounts[5];
-
-    Console.WriteLine($"$1:   {amounts[6]}");
-    info.CountOfNom1 -= amounts[6];
-
+        Console.WriteLine();
+        Console.WriteLine($"Your balance: ${info.Balance}");
+    }
 }
 else
-    Console.WriteLine("Entered withdrawal amount is incorrect!");
+{
+    Console.WriteLine("Entered withdrawal amount is incorrect! Insufficient funds in the account");
+    isError = true;
+}
+
+string status = isError ? "error" : "success";
 
 var newInfo = JsonConvert.SerializeObject(info);
 File.WriteAllText(@"..\..\..\Info.json", newInfo);
 
-Console.WriteLine("Withdrawal status is success!");
+Console.WriteLine();
+Console.WriteLine($"Withdrawal status is {status}!");
 
 Console.ReadKey();
